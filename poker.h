@@ -15,14 +15,9 @@
 #ifndef POKER_H_
 #define POKER_H_
 
-#include <cmath>
-
 #include <vector>
 #include <random>
-
-#include <string>
 #include <iomanip>
-
 #include <stdexcept>
 #include <algorithm>
 
