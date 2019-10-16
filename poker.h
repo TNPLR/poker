@@ -38,10 +38,17 @@ enum {
 	SPADE, /**< SPADE*/
 };
 
+#if unix
 /**
- * Graph of suits
+ * Graph of suits (UTF-8)
  */
 constexpr const char *suit[4] = {"\xe2\x99\xa3", "\xe2\x99\xa6", "\xe2\x99\xa5", "\xe2\x99\xa0"};
+#elif __WIN32 || __WINNT
+/**
+ * Graph of suits (Code Page 437)
+ */
+constexpr const char *suit[4] = {"\x5", "\x4", "\x3", "\x6"};
+#endif // unix
 
 /**
  * A poker card
