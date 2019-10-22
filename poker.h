@@ -15,6 +15,10 @@
 #ifndef POKER_H_
 #define POKER_H_
 
+#if __WIN32 || __WINNT
+#include <ctime>
+#endif //__WIN32 || __WINNT
+
 #include <vector>
 #include <random>
 #include <iomanip>
@@ -271,8 +275,15 @@ void poker::shuffle(unsigned int time)
 {
 	unsigned int sz = pile.size();
 
+#if unix
 	std::random_device rd;
 	std::mt19937_64 generator(rd());
+#elif __WIN32 || __WINNT
+	std::mt19937_64 generator(::time(0));
+#else
+	std::random_device rd;
+	std::mt19937_64 generator(rd());
+#endif // unix
 	std::uniform_real_distribution<double> unif(0.0, static_cast<double>(sz));
 	for (unsigned int i = 0; i < time; ++i) {
 		unsigned int a = static_cast<unsigned int>(floor(unif(generator)));
