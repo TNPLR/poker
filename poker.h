@@ -19,13 +19,14 @@
 #include <ctime>
 #endif //__WIN32 || __WINNT
 
+#include <cstdint>
 #include <vector>
 #include <random>
 #include <iomanip>
 #include <stdexcept>
 #include <algorithm>
 
-namespace poker {
+namespace pk {
 /**
  * An enum of suit
  */
@@ -56,13 +57,13 @@ struct card {
 	 * @param _suit The suit of the card. You may use the enum to fill this argument. Defalut to Club.
 	 * @param _number The number of the card. 0 is None. 1 - 13 is Ace to King. 14 is Joker. Default to None.
 	 */
-	card(unsigned char _suit = 0, unsigned char _number = 0) : suit{_suit}, number{_number} {};
+	card(uint16_t _suit = 0, uint16_t _number = 0) : suit{_suit}, number{_number} {};
 	// 0 - club
 	// 1 - diamond
 	// 2 - heart
 	// 3 - spade
 	/** The suit of the card */
-	unsigned char suit:2;
+	uint16_t suit:2;
 
 	// 0 - No card
 	// 1 - Ace
@@ -73,7 +74,7 @@ struct card {
 	// 13 - King
 	// 14 - Joker
 	/** The number of the card */
-	unsigned char number:4;
+	uint16_t number:4;
 	/** The output for card
 	 * E.g.
 	 *     std::cout << NAME_OF_THE_CARD;
@@ -176,6 +177,12 @@ public:
 	 */
 	struct card draw(unsigned int player_no);
 
+	/** Play a card from the player to the card pile.
+	 * @param player_no The number of the player.
+	 * @param card_no The card number in the player's deck
+	 */
+	void play(unsigned int player_no, unsigned int card_no);
+
 	/** Deal some card to each person.
 	 * @param card_per_person How many card should the function deal to each player.
 	 */
@@ -198,7 +205,21 @@ public:
 	}
 
 	/** Sort the cards of every player. */
-	void sort_player_card();
+	void sort_player_card()
+	{
+		sort_player_card([](struct card a, struct card b)->bool {
+			if (a.number < b.number) {
+				return true;
+			} else if (a.number == b.number) {
+				if (a.suit < b.suit) {
+					return true;
+				}
+			}
+			return false;
+		});
+	}
+	template <typename T>
+	void sort_player_card(T f);
 	~poker() = default;
 
 private:
@@ -232,19 +253,11 @@ std::ostream& operator<<(std::ostream &os, const deck& dk)
 	return os;
 }
 
-void poker::sort_player_card()
+template <typename T>
+void poker::sort_player_card(T f)
 {
 	for (auto &vec : player_card) {
-		std::sort(vec.get_vec().begin(), vec.get_vec().end(), [](struct card a, struct card b)->bool {
-			if (a.number < b.number) {
-				return true;
-			} else if (a.number == b.number) {
-				if (a.suit < b.suit) {
-					return true;
-				}
-			}
-			return false;
-		});
+		std::sort(vec.get_vec().begin(), vec.get_vec().end(), f);
 	}
 }
 
@@ -267,7 +280,7 @@ poker::poker(unsigned int deck, unsigned int player, bool joker) : players{playe
 	}
 
 	for (unsigned int i = 0; i < players; ++i) {
-		player_card.push_back(::poker::deck{});
+		player_card.push_back(::pk::deck{});
 	}
 }
 
@@ -303,6 +316,12 @@ struct card poker::draw(unsigned int player_no)
 	player_card[player_no].push_back(pile.back());
 	pile.pop_back();
 	return player_card[player_no].back();
+}
+
+void poker::play(unsigned int player_no, unsigned int card_no)
+{
+	pile.push_back((*this)[player_no][card_no]);
+	(*this)[player_no].get_vec().erase((*this)[player_no].get_vec().begin() + card_no);
 }
 
 void poker::deal(unsigned int card_per_person)
