@@ -19,6 +19,8 @@
 #include <ctime>
 #endif //__WIN32 || __WINNT
 
+#include <ostream>
+#include <string>
 #include <cstdint>
 #include <vector>
 #include <random>
@@ -37,16 +39,16 @@ enum {
 	SPADE, /**< SPADE*/
 };
 
-#if unix
+#if unix || __GNUC__
 /**
  * Graph of suits (UTF-8)
  */
-constexpr const char *suit[4] = {"\xe2\x99\xa3", "\xe2\x99\xa6", "\xe2\x99\xa5", "\xe2\x99\xa0"};
+constexpr const char *suit_image[4] = {"\xe2\x99\xa3", "\xe2\x99\xa6", "\xe2\x99\xa5", "\xe2\x99\xa0"};
 #elif __WIN32 || __WINNT
 /**
  * Graph of suits (Code Page 437)
  */
-constexpr const char *suit[4] = {"\x5", "\x4", "\x3", "\x6"};
+constexpr const char *suit_image[4] = {"\x5", "\x4", "\x3", "\x6"};
 #endif // unix
 
 /**
@@ -57,13 +59,13 @@ struct card {
 	 * @param _suit The suit of the card. You may use the enum to fill this argument. Defalut to Club.
 	 * @param _number The number of the card. 0 is None. 1 - 13 is Ace to King. 14 is Joker. Default to None.
 	 */
-	card(uint16_t _suit = 0, uint16_t _number = 0) : suit{_suit}, number{_number} {};
+	card(unsigned short _suit = 0, unsigned short _number = 0) : suit{_suit}, number{_number} {};
 	// 0 - club
 	// 1 - diamond
 	// 2 - heart
 	// 3 - spade
 	/** The suit of the card */
-	uint16_t suit:2;
+	unsigned short suit:2;
 
 	// 0 - No card
 	// 1 - Ace
@@ -74,14 +76,14 @@ struct card {
 	// 13 - King
 	// 14 - Joker
 	/** The number of the card */
-	uint16_t number:4;
+	unsigned short number:4;
 	/** The output for card
 	 * E.g.
 	 *     std::cout << NAME_OF_THE_CARD;
 	 * @param os The output stream
 	 * @param cd The card to output
 	 */
-	friend std::ostream& operator<<(std::ostream& os, card cd);
+	friend std::ostream& operator<<(std::ostream& os, const card& cd);
 };
 
 class deck {
@@ -228,10 +230,10 @@ private:
 	std::vector<deck> player_card;
 }; // class poker
 
-std::ostream& operator<<(std::ostream& os, card cd)
+std::ostream& operator<<(std::ostream& os, const card& cd)
 {
 	if (cd.number != 14) {
-		os << suit[cd.suit] << ' ' << std::setw(2) << static_cast<unsigned>(cd.number);
+		os << suit_image[cd.suit] << ' ' << std::setw(2) << static_cast<unsigned>(cd.number);
 	} else {
 		os << "JOKER";
 	}
@@ -343,5 +345,5 @@ void poker::deal(unsigned int card_per_person)
 	}
 }
 
-}; // namespace poker
+} // namespace poker
 #endif // POKER_H_
