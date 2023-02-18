@@ -126,6 +126,12 @@ public:
 		return pile.size();
 	}
 
+	/** @return Return true if the deck is empty. (i.e. this->size() == 0) */
+	inline bool empty(void) const
+	{
+		return pile.size() == 0;
+	}
+
 	/** @return The last card in the deck*/
 	inline struct card& back()
 	{
@@ -220,6 +226,10 @@ public:
 			return false;
 		});
 	}
+
+	/** Sort the cards of every player. An internal Function
+	 * @param f Compare 2 cards
+	 */
 	template <typename T>
 	void sort_player_card(T f);
 	~poker() = default;
@@ -248,6 +258,9 @@ std::ostream& operator<<(std::ostream& os, poker pk)
 
 std::ostream& operator<<(std::ostream &os, const deck& dk)
 {
+	if (dk.empty()) {
+		return os;
+	}
 	os << dk[0];
 	for (unsigned int i = 1; i < dk.size(); ++i) {
 		os << "  " << dk[i];
@@ -329,15 +342,9 @@ void poker::play(unsigned int player_no, unsigned int card_no)
 void poker::deal(unsigned int card_per_person)
 {
 	unsigned int player_no{0};
-	unsigned int card_count{0};
 	card_per_person *= players;
-	for (auto it = pile.get_vec_const().crbegin(); it < pile.get_vec_const().crend(); ++it) {
-		if (card_count < card_per_person) {
-			++card_count;
-		} else {
-			break;
-		}
-		player_card[player_no].push_back(*it);
+	for (unsigned int card_count = 0; card_count < card_per_person; ++card_count) {
+		player_card[player_no].push_back(pile.back());
 		pile.pop_back();
 		if (++player_no >= players) {
 			player_no = 0;
